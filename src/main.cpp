@@ -4,9 +4,10 @@
 #define GLEW_STATIC
 #include "GL/glew.h" // Important - this header must come before glfw3 header
 #include "GLFW/glfw3.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-
+#include "glm/gtx/string_cast.hpp"
 #include "../include/ShaderProgram.h"
 #include "../include/Texture2D.h"
 #include "../include/Camera.h"
@@ -122,44 +123,45 @@ int main()
 		lightingShader.setUniform("sunLight.diffuse", glm::vec3(0.1f, 0.1f, 0.1f)); // dark
 		lightingShader.setUniform("sunLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
 
-		// Point Light 1
-		lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
-		lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("pointLights[0].position", pointLightPos[0]);
-		lightingShader.setUniform("pointLights[0].constant", 1.0f);
-		lightingShader.setUniform("pointLights[0].linear", 0.0022f);
-		lightingShader.setUniform("pointLights[0].exponent", 0.0020f);
+		// // Point Light 1
+		// lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
+		// lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[0].position", pointLightPos[0]);
+		// lightingShader.setUniform("pointLights[0].constant", 1.0f);
+		// lightingShader.setUniform("pointLights[0].linear", 0.0022f);
+		// lightingShader.setUniform("pointLights[0].exponent", 0.0020f);
 
-		// Point Light 2
-		lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
-		lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("pointLights[1].position", pointLightPos[1]);
-		lightingShader.setUniform("pointLights[1].constant", 1.0f);
-		lightingShader.setUniform("pointLights[1].linear", 0.0022f);
-		lightingShader.setUniform("pointLights[1].exponent", 0.0020f);
+		// // Point Light 2
+		// lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
+		// lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[1].position", pointLightPos[1]);
+		// lightingShader.setUniform("pointLights[1].constant", 1.0f);
+		// lightingShader.setUniform("pointLights[1].linear", 0.0022f);
+		// lightingShader.setUniform("pointLights[1].exponent", 0.0020f);
 
-		// Point Light 3
-		lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
-		lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("pointLights[2].position", pointLightPos[2]);
-		lightingShader.setUniform("pointLights[2].constant", 1.0f);
-		lightingShader.setUniform("pointLights[2].linear", 0.0022f);
-		lightingShader.setUniform("pointLights[2].exponent", 0.0020f);
+		// // Point Light 3
+		// lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
+		// lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[2].position", pointLightPos[2]);
+		// lightingShader.setUniform("pointLights[2].constant", 1.0f);
+		// lightingShader.setUniform("pointLights[2].linear", 0.0022f);
+		// lightingShader.setUniform("pointLights[2].exponent", 0.0020f);
 
 		// Spot light
 		glm::vec3 spotlightPos = fpsCamera.getPosition();
-
+		std::cout << "POS : " << glm::to_string(fpsCamera.getPosition()) << std::endl;
+		std::cout << "LOOK : " << glm::to_string(fpsCamera.getLook()) << std::endl;
 		// offset the flash light down a little
 		spotlightPos.y -= 0.5f;
 
 		lightingShader.setUniform("spotLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		lightingShader.setUniform("spotLight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
 		lightingShader.setUniform("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("spotLight.position", spotlightPos);
-		lightingShader.setUniform("spotLight.direction", fpsCamera.getLook());
+		lightingShader.setUniform("spotLight.position", glm::vec3(0.982347, 3.500000, 10.248156));
+		lightingShader.setUniform("spotLight.direction", glm::vec3(-0.202902, -0.470038, -0.859008));
 		lightingShader.setUniform("spotLight.cosInnerCone", glm::cos(glm::radians(15.0f)));
 		lightingShader.setUniform("spotLight.cosOuterCone", glm::cos(glm::radians(20.0f)));
 		lightingShader.setUniform("spotLight.constant", 1.0f);
@@ -170,7 +172,8 @@ int main()
 		// Render the scene
 		for (int i = 0; i < numModels; i++)
 		{
-			model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]);
+			model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]); // * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+			;
 			lightingShader.setUniform("model", model);
 
 			// Set material properties
