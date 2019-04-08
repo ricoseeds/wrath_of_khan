@@ -1,7 +1,7 @@
 
 ###### Run in Mac
 ```
-$ g++ src/main.cpp src/ShaderProgram.cpp src/Texture2D.cpp src/Camera.cpp src/Mesh.cpp  -framework OpenGl -I/usr/local/include -lglfw -lGLEW 
+$ g++ src/main.cpp src/ShaderProgram.cpp src/Texture2D.cpp src/Camera.cpp src/Mesh.cpp  src/shader.cpp src/texture.cpp  -framework OpenGl -I/usr/local/include -lglfw -lGLEW 
 
 $ ./a.out
 ```

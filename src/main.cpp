@@ -1,6 +1,10 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+#include <algorithm>
 #define GLEW_STATIC
 #include "GL/glew.h" // Important - this header must come before glfw3 header
 #include "GLFW/glfw3.h"
@@ -8,10 +12,29 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/string_cast.hpp"
+#include "glm/gtx/norm.hpp"
 #include "../include/ShaderProgram.h"
 #include "../include/Texture2D.h"
 #include "../include/Camera.h"
 #include "../include/Mesh.h"
+#include "../include/shader.hpp"
+#include "../include/texture.hpp"
+#include "../include/controls.hpp"
+
+struct Particle
+{
+	glm::vec3 pos, speed;
+	unsigned char r, g, b, a; // Color
+	float size, angle, weight;
+	float life;			  // Remaining life of the particle. if <0 : dead and unused.
+	float cameradistance; // *Squared* distance to the camera. if dead : -1.0f
+
+	bool operator<(const Particle &that) const
+	{
+		// Sort in reverse order : far particles drawn first.
+		return this->cameradistance > that.cameradistance;
+	}
+};
 
 // Global Variables
 const char *APP_TITLE = "Introduction to Modern OpenGL - Multiple Lights";
@@ -22,6 +45,9 @@ bool gWireframe = false;
 bool gFlashlightOn = true;
 glm::vec4 gClearColor(0.06f, 0.06f, 0.07f, 1.0f);
 static bool mac_moved = false;
+const int MaxParticles = 1000;
+Particle ParticlesContainer[MaxParticles];
+int LastUsedParticle = 0;
 
 FPSCamera fpsCamera(glm::vec3(0.0f, 3.5f, 10.0f));
 const double ZOOM_SENSITIVITY = -3.0;
@@ -36,6 +62,36 @@ void update(double elapsedTime);
 void showFPS(GLFWwindow *window);
 bool initOpenGL();
 void mac_patch(GLFWwindow *window);
+// Finds a Particle in ParticlesContainer which isn't used yet.
+// (i.e. life < 0);
+int FindUnusedParticle()
+{
+
+	for (int i = LastUsedParticle; i < MaxParticles; i++)
+	{
+		if (ParticlesContainer[i].life < 0)
+		{
+			LastUsedParticle = i;
+			return i;
+		}
+	}
+
+	for (int i = 0; i < LastUsedParticle; i++)
+	{
+		if (ParticlesContainer[i].life < 0)
+		{
+			LastUsedParticle = i;
+			return i;
+		}
+	}
+
+	return 0; // All particles are taken, override the first one
+}
+
+void SortParticles()
+{
+	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
+}
 //-----------------------------------------------------------------------------
 // Main Application Entry Point
 //-----------------------------------------------------------------------------
@@ -62,7 +118,7 @@ int main()
 
 	// Model positions
 	glm::vec3 modelPos[] = {
-		glm::vec3(-3.5f, 0.0f, 0.0f), // barrel
+		glm::vec3(0.0f, 0.0f, 0.0f), // barrel
 
 	};
 
@@ -165,8 +221,8 @@ int main()
 		lightingShader.setUniform("spotLight.cosInnerCone", glm::cos(glm::radians(15.0f)));
 		lightingShader.setUniform("spotLight.cosOuterCone", glm::cos(glm::radians(20.0f)));
 		lightingShader.setUniform("spotLight.constant", 1.0f);
-		lightingShader.setUniform("spotLight.linear", 0.07f);
-		lightingShader.setUniform("spotLight.exponent", 0.017f);
+		lightingShader.setUniform("spotLight.linear", 0.007f);
+		lightingShader.setUniform("spotLight.exponent", 0.0017f);
 		lightingShader.setUniform("spotLight.on", gFlashlightOn);
 
 		// Render the scene
@@ -211,7 +267,8 @@ bool initOpenGL()
 		std::cerr << "GLFW initialization failed" << std::endl;
 		return false;
 	}
-
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -243,8 +300,8 @@ bool initOpenGL()
 	glfwSetScrollCallback(gWindow, glfw_onMouseScroll);
 
 	// Hides and grabs cursor, unlimited movement
-	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	// glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
 
@@ -310,13 +367,13 @@ void update(double elapsedTime)
 	double mouseX, mouseY;
 
 	// Get the current mouse cursor position delta
-	glfwGetCursorPos(gWindow, &mouseX, &mouseY);
+	// glfwGetCursorPos(gWindow, &mouseX, &mouseY);
 
 	// Rotate the camera the difference in mouse distance from the center screen.  Multiply this delta by a speed scaler
-	fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
+	// fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
 
 	// Clamp mouse cursor to center of screen
-	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	// Camera FPS movement
 
