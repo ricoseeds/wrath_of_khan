@@ -51,25 +51,31 @@ int main()
 
 	ShaderProgram lightingShader;
 	lightingShader.loadShaders("shaders/lighting_dir_point_spot.vert", "shaders/lighting_dir_point_spot.frag");
+	ShaderProgram bulb;
+	bulb.loadShaders("shaders/bulb.vert", "shaders/bulb.frag");
 
 	// Load meshes and textures
 	const int numModels = 1;
 	Mesh mesh[numModels];
 	Texture2D texture[numModels];
+	int no_particles = 1;
+	Mesh mlights[no_particles];
 
 	mesh[0].loadOBJ("models/Earth_Triangulated.obj");
+	mlights[0].loadOBJ("models/square.obj");
 
 	texture[0].loadTexture("textures/Earth_TEXTURE_CM.tga", true);
+	// texture[1].loadTexture("textures/light_diffuse.jpg", true);
 
 	// Model positions
 	glm::vec3 modelPos[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f), // barrel
+		glm::vec3(0.0f, 0.0f, 0.0f) // barrel
 
 	};
 
 	// Model scale
 	glm::vec3 modelScale[] = {
-		glm::vec3(1.0f, 1.0f, 1.0f), // barrel
+		glm::vec3(1.0f, 1.0f, 1.0f) // barrel
 
 	};
 
@@ -173,8 +179,16 @@ int main()
 		// Render the scene
 		for (int i = 0; i < numModels; i++)
 		{
-			model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]); // * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
-			;
+			// if (i==1)
+			// {
+			// 	model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]) * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+			// }
+			// else
+			// {
+				model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]); // * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+			// }
+			// model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]); // * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+			// ;
 			lightingShader.setUniform("model", model);
 
 			// Set material properties
@@ -187,6 +201,12 @@ int main()
 			mesh[i].draw();		// Render the OBJ mesh
 			texture[i].unbind(0);
 		}
+		bulb.use();
+        bulb.setUniform("lightColor", glm::vec3(1.0f, 1.0f, 0.0f));
+        bulb.setUniform("model", glm::translate(glm::mat4(1.0), glm::vec3(4.0f, 0.0f, 0.0f)));
+        bulb.setUniform("view", view);
+        bulb.setUniform("projection", projection);
+        mlights[0].draw();
 
 		// Swap front and back buffers
 		glfwSwapBuffers(gWindow);
