@@ -63,7 +63,7 @@ int main()
 
 	// Model positions
 	glm::vec3 modelPos[] = {
-		glm::vec3(-3.5f, 0.0f, 0.0f), // barrel
+		glm::vec3(0.0f, 0.0f, 0.0f), // barrel
 
 	};
 
@@ -243,9 +243,9 @@ bool initOpenGL()
 	glfwSetFramebufferSizeCallback(gWindow, glfw_onFramebufferSize);
 	glfwSetScrollCallback(gWindow, glfw_onMouseScroll);
 
-	// Hides and grabs cursor, unlimited movement
-	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	// // Hides and grabs cursor, unlimited movement
+	// glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
 
@@ -311,13 +311,13 @@ void update(double elapsedTime)
 	double mouseX, mouseY;
 
 	// Get the current mouse cursor position delta
-	glfwGetCursorPos(gWindow, &mouseX, &mouseY);
+	// glfwGetCursorPos(gWindow, &mouseX, &mouseY);
 
-	// Rotate the camera the difference in mouse distance from the center screen.  Multiply this delta by a speed scaler
-	fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
+	// // Rotate the camera the difference in mouse distance from the center screen.  Multiply this delta by a speed scaler
+	// fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
 
-	// Clamp mouse cursor to center of screen
-	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	// // Clamp mouse cursor to center of screen
+	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	// Camera FPS movement
 
