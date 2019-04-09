@@ -72,7 +72,7 @@ bool Mesh::loadOBJ(const std::string &filename)
 			return false;
 		}
 
-		std::cout << "Loading OBJ file " << filename << " ..." << std::endl;
+		// std::cout << "Loading OBJ file " << filename << " ..." << std::endl;
 
 		std::string lineBuffer;
 		while (std::getline(fin, lineBuffer))
