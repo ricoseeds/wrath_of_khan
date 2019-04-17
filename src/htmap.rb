@@ -16,9 +16,11 @@ n = 8
 arr = Array.new(2**n + 1) { Array.new(2**n +1) { 0 } }
 n_augmented = 2**n 
 arr[0][0] = rand(10 + 1)
-arr[0][n_augmented] = rand(10 + 1)
+# arr[0][n_augmented] = rand(10 + 1)
+arr[0][n_augmented] = 0
 arr[n_augmented][0] = rand(10 + 1)
 arr[n_augmented][n_augmented] = rand(10 + 1)
+arr[n_augmented][n_augmented] = 0
 
 
 a = arr
@@ -41,15 +43,43 @@ while n_augmented > 1
     range = range / 2
     n_augmented = n_augmented / 2
 end
-
+min_height = 100
+for i in 0..a.length - 1
+    for j in 0..a.length - 1
+        if a[i][j] < min_height
+            min_height = a[i][j]
+        end
+    end
+end
 board = n_augmented_copy + 1
 c = 0 
 k = board + 1
 #Print vertices 
-File.open("mountain.obj", 'w') { |file| 
+ridge_left = a.length/2 - 20 
+ridge_right = a.length/2 + 20
+diff = ridge_right - ridge_left
+t = 0
+count = 0
+# A = 0
+B = (min_height/2).to_f
+File.open("models/mountain_rivers.obj", 'w') { |file| 
     for i in 0..a.length - 1
+        t = 0
+        # A = (a[i][ridge_left] / 1.2).to_f
+        # B = min_height.to_f
         for j in 0..a.length - 1
-            file.write("v " + j.to_f.to_s + " " + a[i][j].to_f.to_s + " " + i.to_f.to_s+ "\n")
+            if (j <= ridge_left) || (j >= ridge_right)
+                file.write("v " + j.to_f.to_s + " " + a[i][j].to_f.to_s + " " + i.to_f.to_s+ "\n")
+            else
+                if j >=ridge_left && j <= (ridge_left + ridge_right)/2
+                    t = t + 0.04
+                    a[i][j] = (1 - t) * ((a[i][ridge_left] / 1.2).to_f) + t * B
+                    file.write("v " + j.to_f.to_s + " " + (a[i][j]).to_f.to_s + " " + i.to_f.to_s+ "\n")
+                else
+                    file.write("v " + j.to_f.to_s + " " + (min_height).to_f.to_s + " " + i.to_f.to_s+ "\n")
+
+                end
+            end
         end
     end
 

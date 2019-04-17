@@ -416,8 +416,8 @@ int main()
 			// 	// Set material properties
 			lightingShader.setUniform("material.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 			lightingShader.setUniformSampler("material.diffuseMap", 0);
-			lightingShader.setUniform("material.specular", glm::vec3(0.8f, 0.8f, 0.8f));
-			lightingShader.setUniform("material.shininess", 32.0f);
+			lightingShader.setUniform("material.specular", glm::vec3(0.2f, 0.2f, 0.2f));
+			lightingShader.setUniform("material.shininess", 10.0f);
 
 			texture[i].bind(0); // set the texture before drawing.  Our simple OBJ mesh loader does not do materials yet.
 			mesh[i].draw();		// Render the OBJ mesh

@@ -242,6 +242,7 @@ void Mesh::make_displacement()
 	// Use stbi image library to load our image
 	// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/iit.jpeg", &width, &height, &components, STBI_rgb_alpha);
 	unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/perlin2.jpg", &width, &height, &components, STBI_rgb_alpha);
+	// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/craters.png", &width, &height, &components, STBI_rgb_alpha);
 	// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/tux.jpg", &width, &height, &components, STBI_rgb_alpha);
 	int widthInBytes = width * 4;
 	double grayscale, grayscale_h = 0.0, grayscale_l = 255;
