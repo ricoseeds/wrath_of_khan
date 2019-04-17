@@ -17,14 +17,15 @@ struct Vertex
 
 class Mesh
 {
-  public:
+public:
 	Mesh();
 	~Mesh();
 
 	bool loadOBJ(const std::string &filename);
 	void draw();
+	void make_displacement();
 
-  private:
+private:
 	void initBuffers();
 
 	bool mLoaded;

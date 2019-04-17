@@ -78,6 +78,7 @@ bool Texture2D::loadTexture(const string &fileName, bool generateMipMaps)
 	if (generateMipMaps)
 		glGenerateMipmap(GL_TEXTURE_2D);
 
+	// std::cout << imageData[0];
 	stbi_image_free(imageData);
 	glBindTexture(GL_TEXTURE_2D, 0); // unbind texture when done so we don't accidentally mess up our mTexture
 

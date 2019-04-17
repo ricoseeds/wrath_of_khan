@@ -136,9 +136,10 @@ int main()
 	Mesh mesh[numModels];
 	Texture2D texture[numModels];
 
-	mesh[0].loadOBJ("models/Earth_Triangulated.obj");
+	mesh[0].loadOBJ("models/sphere3.obj");
 
-	texture[0].loadTexture("textures/Earth_TEXTURE_CM.tga", true);
+	// texture[0].loadTexture("textures/Earth_TEXTURE_CM.tga", true);
+	texture[0].loadTexture("textures/gray.png", true);
 
 	// Model positions
 	glm::vec3 modelPos[] = {
@@ -480,8 +481,8 @@ bool initOpenGL()
 	glfwSetScrollCallback(gWindow, glfw_onMouseScroll);
 
 	// Hides and grabs cursor, unlimited movement
-	// glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
 
@@ -548,13 +549,13 @@ void update(double elapsedTime)
 	double mouseX, mouseY;
 
 	// Get the current mouse cursor position delta
-	// glfwGetCursorPos(gWindow, &mouseX, &mouseY);
+	glfwGetCursorPos(gWindow, &mouseX, &mouseY);
 
 	// Rotate the camera the difference in mouse distance from the center screen.  Multiply this delta by a speed scaler
-	// fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
+	fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
 
 	// Clamp mouse cursor to center of screen
-	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	// Camera FPS movement
 
