@@ -45,7 +45,7 @@ int gWindowHeight = 768;
 GLFWwindow *gWindow = NULL;
 bool gWireframe = false;
 bool gFlashlightOn = true;
-glm::vec4 gClearColor(0.16f, 0.16f, 0.7f, 1.0f);
+glm::vec4 gClearColor(0.016f, 0.016f, 0.2f, 1.0f);
 static bool mac_moved = false;
 const int MaxParticles = 10000;
 Particle ParticlesContainer[MaxParticles];
@@ -249,6 +249,8 @@ int main()
 		if (bezier_camera_param >= 0.90000001)
 		{
 			bezier_camera_param = 1.0;
+			gClearColor = glm::vec4(0.26f, 0.26f, 0.8f, 1.0f);
+			glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
 			if (!cam_positioned)
 			{
 				campos = glm::vec3(89.628868, 14.465105, 100.186050);
@@ -303,7 +305,7 @@ int main()
 
 		//BEGIN PARTICLES
 		int newparticles = (int)(deltaTime * 10000.0);
-		std::cout << glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) << "\n";
+		// std::cout << glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) << "\n";
 		if (glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) < 1.3)
 		{
 			hit = true;
@@ -640,21 +642,11 @@ bool initOpenGL()
 	glfwSetKeyCallback(gWindow, glfw_onKey);
 	glfwSetFramebufferSizeCallback(gWindow, glfw_onFramebufferSize);
 	glfwSetScrollCallback(gWindow, glfw_onMouseScroll);
-
-	// Hides and grabs cursor, unlimited movement
-	// glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
-
 	glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
 	dynamic_camera_points.push_back(campos);
 	dynamic_camera_points.push_back(glm::vec3(0.0f, 10.0f, 10.0f));
 	dynamic_camera_points.push_back(glm::vec3(0.0f, 4.0f, 0.0f));
 	dynamic_camera_points.push_back(glm::vec3(0.0f, 8.0f, -10.0f));
-	// dynamic_camera_explore.push_back(campos);
-	// dynamic_camera_explore.push_back(glm::vec3(86.0f, 3.5f, 56.0f));
-	// dynamic_camera_explore.push_back(glm::vec3(91.0f, -1.0f, 33.0f));
-	// dynamic_camera_explore.push_back(glm::vec3(90.0f, 3.0f, 46.0f));
-	// Define the viewport dimensions
 	glViewport(0, 0, gWindowWidth, gWindowHeight);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
