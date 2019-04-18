@@ -231,7 +231,7 @@ int main()
 	double circle_radii = 0.1;
 	bool cam_positioned = false;
 	bool hit = false;
-
+	double save_time;
 	while (!glfwWindowShouldClose(gWindow))
 	{
 		showFPS(gWindow);
@@ -309,6 +309,7 @@ int main()
 		if (glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) < 1.3)
 		{
 			hit = true;
+			save_time = glfwGetTime();
 		}
 
 		if (!hit)
@@ -364,32 +365,36 @@ int main()
 			lightingShader.setUniform(sexp.c_str(), 0.0020f);
 		}
 
-		for (int i = 0; i < newparticles / 8; i++)
+		if (hit && glfwGetTime() < 6.5)
 		{
-			int particleIndex = FindUnusedParticle();
-			ParticlesContainer[particleIndex].life = 0.1f; // This particle will live 5 seconds.
-			// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
-			ParticlesContainer[particleIndex].pos = glm::vec3(0, 1, 0);
 
-			float spread = 1.5f;
-			glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
-			// Very bad way to generate a random direction;
-			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
-			// combined with some user-controlled parameters (main direction, spread, etc)
-			glm::vec3 randomdir = glm::vec3(
-				(rand() % 2000 - 1000.0f) / 1000.0f,
-				(rand() % 2000 - 1000.0f) / 1000.0f,
-				(rand() % 2000 - 1000.0f) / 1000.0f);
+			for (int i = 0; i < newparticles / 8; i++)
+			{
+				int particleIndex = FindUnusedParticle();
+				ParticlesContainer[particleIndex].life = 0.1f; // This particle will live 5 seconds.
+				// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
+				ParticlesContainer[particleIndex].pos = glm::vec3(0, 1, 0);
 
-			ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
+				float spread = 1.5f;
+				glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
+				// Very bad way to generate a random direction;
+				// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
+				// combined with some user-controlled parameters (main direction, spread, etc)
+				glm::vec3 randomdir = glm::vec3(
+					(rand() % 2000 - 1000.0f) / 1000.0f,
+					(rand() % 2000 - 1000.0f) / 1000.0f,
+					(rand() % 2000 - 1000.0f) / 1000.0f);
 
-			ParticlesContainer[particleIndex].r = 255;
-			ParticlesContainer[particleIndex].g = 255 - (rand() % 250);
-			ParticlesContainer[particleIndex].b = 0;
-			ParticlesContainer[particleIndex].a = 255;
+				ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
 
-			ParticlesContainer[particleIndex].size = 0.06f;
-			// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
+				ParticlesContainer[particleIndex].r = 255;
+				ParticlesContainer[particleIndex].g = 255 - (rand() % 250);
+				ParticlesContainer[particleIndex].b = 0;
+				ParticlesContainer[particleIndex].a = 255;
+
+				ParticlesContainer[particleIndex].size = 0.06f;
+				// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
+			}
 		}
 		circle_radii += 0.001;
 		if (circle_radii > 1)
@@ -580,7 +585,7 @@ int main()
 			lightingShader.setUniform("material.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 			lightingShader.setUniformSampler("material.diffuseMap", 0);
 			lightingShader.setUniform("material.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-			lightingShader.setUniform("material.shininess", 10.0f);
+			lightingShader.setUniform("material.shininess", 1000.0f);
 
 			texture[i].bind(0); // set the texture before drawing.  Our simple OBJ mesh loader does not do materials yet.
 			mesh[i].draw();		// Render the OBJ mesh
