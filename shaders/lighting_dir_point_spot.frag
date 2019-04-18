@@ -56,10 +56,10 @@ in vec2 TexCoord;
 in vec3 FragPos;
 in vec3 Normal;
 
-//#define MAX_POINT_LIGHTS 1
+#define MAX_POINT_LIGHTS 3
 
 uniform DirectionalLight sunLight;
-//uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLight;
 uniform Material material;
 uniform vec3 viewPos;
@@ -84,8 +84,8 @@ void main()
 
 	outColor += calcDirectionalLightColor(sunLight, normal, viewDir);
 
-  // for(int i = 0; i < MAX_POINT_LIGHTS; i++)
-    //    outColor += calcPointLightColor(pointLights[i], normal, FragPos, viewDir);  
+   for(int i = 0; i < MAX_POINT_LIGHTS; i++)
+        outColor += calcPointLightColor(pointLights[i], normal, FragPos, viewDir);  
 
 	// If the light isn't on then just return 0 for diffuse and specular colors
 	if (spotLight.on == 1)

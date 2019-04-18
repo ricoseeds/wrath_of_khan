@@ -100,6 +100,7 @@ void showFPS(GLFWwindow *window);
 bool initOpenGL();
 void mac_patch(GLFWwindow *window);
 glm::vec3 get_bezier_points(double t, float *point_array);
+float RandomFloat(float a, float b);
 
 // Finds a Particle in ParticlesContainer which isn't used yet.
 // (i.e. life < 0);
@@ -221,7 +222,7 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, particles_color_buffer);
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
-
+	double circle_radii = 0.5;
 	while (!glfwWindowShouldClose(gWindow))
 	{
 		showFPS(gWindow);
@@ -262,15 +263,66 @@ int main()
 		viewPos.z = fpsCamera.getPosition().z;
 		glm::vec3 CameraPosition(glm::inverse(view)[3]);
 		glm::mat4 ViewProjectionMatrix = projection * view;
+		lightingShader.use();
+
 		//BEGIN PARTICLES
 		int newparticles = (int)(deltaTime * 10000.0);
 		if (newparticles > (int)(0.016f * 10000.0))
 			newparticles = (int)(0.016f * 10000.0);
+		lightingShader.use();
+		lightingShader.setUniform("model", glm::mat4(1.0)); // do not need to translate the models so just send the identity matrix
+		lightingShader.setUniform("view", view);
+		lightingShader.setUniform("projection", projection);
+		lightingShader.setUniform("viewPos", viewPos);
 
-		for (int i = 0; i < newparticles; i++)
+		// // Directional light
+		lightingShader.setUniform("sunLight.direction", glm::vec3(0.0f, -0.9f, -0.17f));
+		lightingShader.setUniform("sunLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		lightingShader.setUniform("sunLight.diffuse", glm::vec3(0.1f, 0.1f, 0.1f)); // dark
+		lightingShader.setUniform("sunLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
+
+		lightingShader.setUniform("spotLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		lightingShader.setUniform("spotLight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+		lightingShader.setUniform("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.setUniform("spotLight.position", glm::vec3(0.982347, 3.500000, 10.248156));
+		lightingShader.setUniform("spotLight.direction", glm::vec3(-0.202902, -0.470038, -0.859008));
+		lightingShader.setUniform("spotLight.cosInnerCone", glm::cos(glm::radians(15.0f)));
+		lightingShader.setUniform("spotLight.cosOuterCone", glm::cos(glm::radians(20.0f)));
+		lightingShader.setUniform("spotLight.constant", 1.0f);
+		lightingShader.setUniform("spotLight.linear", 0.007f);
+		lightingShader.setUniform("spotLight.exponent", 0.0017f);
+		lightingShader.setUniform("spotLight.on", gFlashlightOn);
+
+		lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
+		lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[0].position", glm::vec3(1.5f, 0.0f, 0.0f));
+		lightingShader.setUniform("pointLights[0].constant", 1.0f);
+		lightingShader.setUniform("pointLights[0].linear", 0.22f);
+		lightingShader.setUniform("pointLights[0].exponent", 0.20f);
+
+		// Point Light 2
+		lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
+		lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.setUniform("pointLights[1].position", glm::vec3(-1.5f, 0.0f, 0.0f));
+		lightingShader.setUniform("pointLights[1].constant", 1.0f);
+		lightingShader.setUniform("pointLights[1].linear", 0.22f);
+		lightingShader.setUniform("pointLights[1].exponent", 0.20f);
+
+		// Point Light 3
+		lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
+		lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.setUniform("pointLights[2].position", glm::vec3(0.0f, -1.0f, 0.0f));
+		lightingShader.setUniform("pointLights[2].constant", 1.0f);
+		lightingShader.setUniform("pointLights[2].linear", 0.22f);
+		lightingShader.setUniform("pointLights[2].exponent", 0.20f);
+
+		for (int i = 0; i < newparticles / 8; i++)
 		{
 			int particleIndex = FindUnusedParticle();
-			ParticlesContainer[particleIndex].life = 0.2f; // This particle will live 5 seconds.
+			ParticlesContainer[particleIndex].life = 0.1f; // This particle will live 5 seconds.
 			// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
 			ParticlesContainer[particleIndex].pos = glm::vec3(0, 1, 0);
 
@@ -285,6 +337,7 @@ int main()
 				(rand() % 2000 - 1000.0f) / 1000.0f);
 
 			ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
+			// lightingShader.setUniform("pointLights[0].position", glm::vec3(1.5f, 0.0f, 0.0f));
 
 			// Very bad way to generate a random color
 			// ParticlesContainer[particleIndex].r = rand() % 256;
@@ -295,9 +348,72 @@ int main()
 			ParticlesContainer[particleIndex].r = 255;
 			ParticlesContainer[particleIndex].g = 255 - (rand() % 250);
 			ParticlesContainer[particleIndex].b = 0;
-			ParticlesContainer[particleIndex].a = (rand() % 256) / 3;
+			ParticlesContainer[particleIndex].a = 255;
 
-			ParticlesContainer[particleIndex].size = 0.03f;
+			ParticlesContainer[particleIndex].size = 0.06f;
+			// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
+		}
+
+		for (int i = newparticles / 8; i < newparticles; i++)
+		{
+			int particleIndex = FindUnusedParticle();
+			ParticlesContainer[particleIndex].life = 0.3f; // This particle will live 5 seconds.
+			// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
+			double y = sqrt(1 - circle_radii * circle_radii);
+			double t = RandomFloat(0.0f, (float)2 * M_PI);
+			ParticlesContainer[particleIndex].pos = glm::vec3(circle_radii * cos(t), y, circle_radii * sin(t));
+
+			float spread = 1.5f;
+			// glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
+			glm::vec3 maindir = ParticlesContainer[particleIndex].pos;
+			// lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+			// lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
+			// lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+			// lightingShader.setUniform("pointLights[0].position", ParticlesContainer[particleIndex].pos);
+			// lightingShader.setUniform("pointLights[0].constant", 1.0f);
+			// lightingShader.setUniform("pointLights[0].linear", 0.22f);
+			// lightingShader.setUniform("pointLights[0].exponent", 0.20f);
+
+			// // Point Light 2
+			// lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+			// lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
+			// lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+			// lightingShader.setUniform("pointLights[1].position", ParticlesContainer[particleIndex].pos);
+			// lightingShader.setUniform("pointLights[1].constant", 1.0f);
+			// lightingShader.setUniform("pointLights[1].linear", 0.22f);
+			// lightingShader.setUniform("pointLights[1].exponent", 0.20f);
+
+			// // Point Light 3
+			// lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+			// lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
+			// lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+			// lightingShader.setUniform("pointLights[2].position", ParticlesContainer[particleIndex].pos);
+			// lightingShader.setUniform("pointLights[2].constant", 1.0f);
+			// lightingShader.setUniform("pointLights[2].linear", 0.22f);
+			// lightingShader.setUniform("pointLights[2].exponent", 0.20f);
+			// Very bad way to generate a random direction;
+			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
+			// combined with some user-controlled parameters (main direction, spread, etc)
+
+			glm::vec3 randomdir = glm::vec3(
+				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f);
+
+			ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
+
+			// Very bad way to generate a random color
+			// ParticlesContainer[particleIndex].r = rand() % 256;
+			// ParticlesContainer[particleIndex].g = rand() % 256;
+			// ParticlesContainer[particleIndex].b = rand() % 256;
+			// ParticlesContainer[particleIndex].a = (rand() % 256) / 3;
+
+			ParticlesContainer[particleIndex].r = 255;
+			ParticlesContainer[particleIndex].g = 255; // - (rand() % 250);
+			ParticlesContainer[particleIndex].b = 0;
+			ParticlesContainer[particleIndex].a = 255; //(rand() % 256) / 3;
+
+			ParticlesContainer[particleIndex].size = 0.06f;
 			// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
 		}
 		// Simulate all particles
@@ -318,10 +434,11 @@ int main()
 					// Simulate simple physics : gravity only, no collisions
 					p.speed += glm::vec3(0.0f, -9.81f, 0.0f) * (float)deltaTime * 0.5f;
 					p.pos += p.speed * (float)deltaTime;
-					// if (i == 1)
-					// {
-					// 	// std::cout << glm::to_string(p.pos) << std::endl;
-					// }
+					if (i == 1)
+					{
+						// std::cout << glm::to_string(p.pos) << std::endl;
+						lightingShader.setUniform("pointLights[0].position", p.pos);
+					}
 
 					// std::cout << glm::to_string(p.pos) << std::endl;
 					p.cameradistance = glm::length2(p.pos - CameraPosition);
@@ -423,28 +540,54 @@ int main()
 		// on the currently active shader program.
 
 		lightingShader.use();
-		lightingShader.setUniform("model", glm::mat4(1.0)); // do not need to translate the models so just send the identity matrix
-		lightingShader.setUniform("view", view);
-		lightingShader.setUniform("projection", projection);
-		lightingShader.setUniform("viewPos", viewPos);
+		// lightingShader.setUniform("model", glm::mat4(1.0)); // do not need to translate the models so just send the identity matrix
+		// lightingShader.setUniform("view", view);
+		// lightingShader.setUniform("projection", projection);
+		// lightingShader.setUniform("viewPos", viewPos);
 
-		// // Directional light
-		lightingShader.setUniform("sunLight.direction", glm::vec3(0.0f, -0.9f, -0.17f));
-		lightingShader.setUniform("sunLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-		lightingShader.setUniform("sunLight.diffuse", glm::vec3(0.1f, 0.1f, 0.1f)); // dark
-		lightingShader.setUniform("sunLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
+		// // // Directional light
+		// lightingShader.setUniform("sunLight.direction", glm::vec3(0.0f, -0.9f, -0.17f));
+		// lightingShader.setUniform("sunLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		// lightingShader.setUniform("sunLight.diffuse", glm::vec3(0.1f, 0.1f, 0.1f)); // dark
+		// lightingShader.setUniform("sunLight.specular", glm::vec3(0.1f, 0.1f, 0.1f));
 
-		lightingShader.setUniform("spotLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-		lightingShader.setUniform("spotLight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-		lightingShader.setUniform("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("spotLight.position", glm::vec3(0.982347, 3.500000, 10.248156));
-		lightingShader.setUniform("spotLight.direction", glm::vec3(-0.202902, -0.470038, -0.859008));
-		lightingShader.setUniform("spotLight.cosInnerCone", glm::cos(glm::radians(15.0f)));
-		lightingShader.setUniform("spotLight.cosOuterCone", glm::cos(glm::radians(20.0f)));
-		lightingShader.setUniform("spotLight.constant", 1.0f);
-		lightingShader.setUniform("spotLight.linear", 0.007f);
-		lightingShader.setUniform("spotLight.exponent", 0.0017f);
-		lightingShader.setUniform("spotLight.on", gFlashlightOn);
+		// lightingShader.setUniform("spotLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		// lightingShader.setUniform("spotLight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+		// lightingShader.setUniform("spotLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("spotLight.position", glm::vec3(0.982347, 3.500000, 10.248156));
+		// lightingShader.setUniform("spotLight.direction", glm::vec3(-0.202902, -0.470038, -0.859008));
+		// lightingShader.setUniform("spotLight.cosInnerCone", glm::cos(glm::radians(15.0f)));
+		// lightingShader.setUniform("spotLight.cosOuterCone", glm::cos(glm::radians(20.0f)));
+		// lightingShader.setUniform("spotLight.constant", 1.0f);
+		// lightingShader.setUniform("spotLight.linear", 0.007f);
+		// lightingShader.setUniform("spotLight.exponent", 0.0017f);
+		// lightingShader.setUniform("spotLight.on", gFlashlightOn);
+
+		// lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
+		// lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[0].position", glm::vec3(1.5f, 0.0f, 0.0f));
+		// lightingShader.setUniform("pointLights[0].constant", 1.0f);
+		// lightingShader.setUniform("pointLights[0].linear", 0.22f);
+		// lightingShader.setUniform("pointLights[0].exponent", 0.20f);
+
+		// // Point Light 2
+		// lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
+		// lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[1].position", glm::vec3(-1.5f, 0.0f, 0.0f));
+		// lightingShader.setUniform("pointLights[1].constant", 1.0f);
+		// lightingShader.setUniform("pointLights[1].linear", 0.22f);
+		// lightingShader.setUniform("pointLights[1].exponent", 0.20f);
+
+		// // Point Light 3
+		// lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		// lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
+		// lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		// lightingShader.setUniform("pointLights[2].position", glm::vec3(0.0f, -1.0f, 0.0f));
+		// lightingShader.setUniform("pointLights[2].constant", 1.0f);
+		// lightingShader.setUniform("pointLights[2].linear", 0.22f);
+		// lightingShader.setUniform("pointLights[2].exponent", 0.20f);
 
 		// Render the scene
 		for (int i = 0; i < numModels; i++)
@@ -526,9 +669,9 @@ bool initOpenGL()
 
 	glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
 	dynamic_camera_points.push_back(campos);
-	dynamic_camera_points.push_back(glm::vec3(80.0f, 10.0f, -10.0f));
-	dynamic_camera_points.push_back(glm::vec3(0.0f, 20.0f, -40.0f));
-	dynamic_camera_points.push_back(glm::vec3(-50.0f, 100.0f, 0.0f));
+	dynamic_camera_points.push_back(glm::vec3(0.0f, 10.0f, 10.0f));
+	dynamic_camera_points.push_back(glm::vec3(0.0f, 4.0f, 0.0f));
+	dynamic_camera_points.push_back(glm::vec3(0.0f, 8.0f, -10.0f));
 	// Define the viewport dimensions
 	glViewport(0, 0, gWindowWidth, gWindowHeight);
 	glEnable(GL_DEPTH_TEST);
@@ -681,4 +824,11 @@ glm::vec3 get_bezier_points(double t, float *point_array)
 	// float *point_array = &dynamic_points[0].x;
 	glm::mat4x3 control_p = glm::make_mat4x3(point_array);
 	return control_p * blend_mat * glm::vec4(1.0f, t, t * t, t * t * t);
+}
+float RandomFloat(float a, float b)
+{
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = b - a;
+	float r = random * diff;
+	return a + r;
 }
