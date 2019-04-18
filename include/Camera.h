@@ -144,6 +144,7 @@ public:
 	virtual void rotate(float yaw, float pitch); // in degrees
 	virtual void move(const glm::vec3 &offsetPos);
 	void setLookAt(const glm::vec3 &target);
+	void setTarget(const glm::vec3 &tposition);
 
 private:
 	void updateCameraVectors();

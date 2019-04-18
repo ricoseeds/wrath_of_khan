@@ -288,7 +288,10 @@ void FPSCamera::setPosition(const glm::vec3 &position)
 {
 	mPosition = position;
 }
-
+void FPSCamera::setTarget(const glm::vec3 &tposition)
+{
+	mTargetPos = tposition;
+}
 //-----------------------------------------------------------------------------
 // FPSCamera - Sets the incremental position of the camera in world space
 //-----------------------------------------------------------------------------

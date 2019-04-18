@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 #define GLEW_STATIC
 #include "GL/glew.h" // Important - this header must come before glfw3 header
 #include "GLFW/glfw3.h"
@@ -72,6 +73,7 @@ GLuint TextureID;
 glm::vec3 campos(0.0f, 0.0f, 20.0f);
 FPSCamera fpsCamera(campos, glm::vec3(0.0, 0.0, 0.0));
 double bezier_camera_param = 0.0f;
+double bezier_camera_param2 = 0.0f;
 const double ZOOM_SENSITIVITY = -3.0;
 const float MOVE_SPEED = 5.0; // units per second
 const float MOUSE_SENSITIVITY = 0.1f;
@@ -223,6 +225,7 @@ int main()
 	// Initialize with empty (NULL) buffer : it will be updated later, each frame.
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW);
 	double circle_radii = 0.5;
+	bool cam_positioned = false;
 	while (!glfwWindowShouldClose(gWindow))
 	{
 		showFPS(gWindow);
@@ -240,6 +243,13 @@ int main()
 		if (bezier_camera_param >= 0.90000001)
 		{
 			bezier_camera_param = 1.0;
+			if (!cam_positioned)
+			{
+				fpsCamera.setPosition(glm::vec3(90.628868, 21.465105, 129.186050));
+				fpsCamera.setTarget(glm::vec3(-40.628868, 0.465105, 0.186050));
+			}
+
+			cam_positioned = true;
 		}
 		else
 		{
@@ -258,6 +268,7 @@ int main()
 
 		// update the view (camera) position
 		glm::vec3 viewPos;
+		std::cout << glm::to_string(fpsCamera.getPosition()) << std::endl;
 		viewPos.x = fpsCamera.getPosition().x;
 		viewPos.y = fpsCamera.getPosition().y;
 		viewPos.z = fpsCamera.getPosition().z;
@@ -293,31 +304,24 @@ int main()
 		lightingShader.setUniform("spotLight.exponent", 0.0017f);
 		lightingShader.setUniform("spotLight.on", gFlashlightOn);
 
-		lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
-		lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		// lightingShader.setUniform("pointLights[0].position", glm::vec3(1.5f, 0.0f, 0.0f));
-		lightingShader.setUniform("pointLights[0].constant", 1.0f);
-		lightingShader.setUniform("pointLights[0].linear", 0.22f);
-		lightingShader.setUniform("pointLights[0].exponent", 0.20f);
+		for (size_t i = 0; i < 30; i++)
 
-		// Point Light 2
-		lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
-		lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("pointLights[1].position", glm::vec3(-1.5f, 0.0f, 0.0f));
-		lightingShader.setUniform("pointLights[1].constant", 1.0f);
-		lightingShader.setUniform("pointLights[1].linear", 0.22f);
-		lightingShader.setUniform("pointLights[1].exponent", 0.20f);
-
-		// Point Light 3
-		lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-		lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
-		lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-		lightingShader.setUniform("pointLights[2].position", glm::vec3(0.0f, -1.0f, 0.0f));
-		lightingShader.setUniform("pointLights[2].constant", 1.0f);
-		lightingShader.setUniform("pointLights[2].linear", 0.22f);
-		lightingShader.setUniform("pointLights[2].exponent", 0.20f);
+		{
+			std::string sposi = "pointLights[" + boost::lexical_cast<std::string>(i) + "].position";
+			std::string samb = "pointLights[" + boost::lexical_cast<std::string>(i) + "].ambient";
+			std::string sdiff = "pointLights[" + boost::lexical_cast<std::string>(i) + "].diffuse";
+			std::string sspec = "pointLights[" + boost::lexical_cast<std::string>(i) + "].specular";
+			std::string scons = "pointLights[" + boost::lexical_cast<std::string>(i) + "].constant";
+			std::string slin = "pointLights[" + boost::lexical_cast<std::string>(i) + "].linear";
+			std::string sexp = "pointLights[" + boost::lexical_cast<std::string>(i) + "].exponent";
+			lightingShader.setUniform(samb.c_str(), glm::vec3(0.2f, 0.2f, 0.2f));
+			lightingShader.setUniform(sdiff.c_str(), glm::vec3(1.0f, 1.0f, 1.0f)); //white light
+			lightingShader.setUniform(sspec.c_str(), glm::vec3(1.0f, 1.0f, 1.0f));
+			// // lightingShader.setUniform("pointLights[2].position", glm::vec3(0.0f, -1.0f, 0.0f));
+			lightingShader.setUniform(scons.c_str(), 1.0f);
+			lightingShader.setUniform(slin.c_str(), 0.0022f);
+			lightingShader.setUniform(sexp.c_str(), 0.0020f);
+		}
 
 		for (int i = 0; i < newparticles / 8; i++)
 		{
@@ -366,34 +370,6 @@ int main()
 			float spread = 1.5f;
 			// glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
 			glm::vec3 maindir = ParticlesContainer[particleIndex].pos;
-			// lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-			// lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(0.0f, 1.0f, 0.1f)); // green-ish light
-			// lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-			// lightingShader.setUniform("pointLights[0].position", ParticlesContainer[particleIndex].pos);
-			// lightingShader.setUniform("pointLights[0].constant", 1.0f);
-			// lightingShader.setUniform("pointLights[0].linear", 0.22f);
-			// lightingShader.setUniform("pointLights[0].exponent", 0.20f);
-
-			// // Point Light 2
-			// lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-			// lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 0.1f, 0.0f)); // red-ish light
-			// lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-			// lightingShader.setUniform("pointLights[1].position", ParticlesContainer[particleIndex].pos);
-			// lightingShader.setUniform("pointLights[1].constant", 1.0f);
-			// lightingShader.setUniform("pointLights[1].linear", 0.22f);
-			// lightingShader.setUniform("pointLights[1].exponent", 0.20f);
-
-			// // Point Light 3
-			// lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
-			// lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(0.0f, 0.1f, 1.0f)); // blue-ish light
-			// lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-			// lightingShader.setUniform("pointLights[2].position", ParticlesContainer[particleIndex].pos);
-			// lightingShader.setUniform("pointLights[2].constant", 1.0f);
-			// lightingShader.setUniform("pointLights[2].linear", 0.22f);
-			// lightingShader.setUniform("pointLights[2].exponent", 0.20f);
-			// Very bad way to generate a random direction;
-			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
-			// combined with some user-controlled parameters (main direction, spread, etc)
 
 			glm::vec3 randomdir = glm::vec3(
 				(rand() % 2000 - 1000.0f) / 1000.0f,
@@ -434,10 +410,11 @@ int main()
 					// Simulate simple physics : gravity only, no collisions
 					p.speed += glm::vec3(0.0f, -9.81f, 0.0f) * (float)deltaTime * 0.5f;
 					p.pos += p.speed * (float)deltaTime;
-					if (i == 1)
+					if (i < 30)
 					{
 						// std::cout << glm::to_string(p.pos) << std::endl;
-						lightingShader.setUniform("pointLights[0].position", p.pos);
+						std::string bui = "pointLights[" + boost::lexical_cast<std::string>(i) + "].position";
+						lightingShader.setUniform(bui.c_str(), p.pos);
 					}
 
 					// std::cout << glm::to_string(p.pos) << std::endl;
