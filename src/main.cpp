@@ -264,7 +264,7 @@ int main()
 		}
 		else
 		{
-			bezier_camera_param += 0.0006;
+			bezier_camera_param += 0.0008;
 			glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param, &dynamic_camera_points[0].x);
 			fpsCamera.move(new_cam_point - fpsCamera.getPosition());
 		}
