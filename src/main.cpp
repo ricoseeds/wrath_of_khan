@@ -13,6 +13,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/norm.hpp"
+#include <glm/gtc/type_ptr.hpp>
 #include "../include/ShaderProgram.h"
 #include "../include/Texture2D.h"
 #include "../include/Camera.h"
@@ -43,7 +44,7 @@ int gWindowHeight = 768;
 GLFWwindow *gWindow = NULL;
 bool gWireframe = false;
 bool gFlashlightOn = true;
-glm::vec4 gClearColor(0.06f, 0.06f, 0.07f, 1.0f);
+glm::vec4 gClearColor(0.0f, 0.0f, 0.1f, 1.0f);
 static bool mac_moved = false;
 const int MaxParticles = 10000;
 Particle ParticlesContainer[MaxParticles];
@@ -68,7 +69,9 @@ GLuint billboard_vertex_buffer;
 GLuint particles_position_buffer;
 GLuint particles_color_buffer;
 GLuint TextureID;
-FPSCamera fpsCamera(glm::vec3(0.0f, 3.5f, 10.0f));
+glm::vec3 campos(0.0f, 0.0f, 20.0f);
+FPSCamera fpsCamera(campos, glm::vec3(0.0, 0.0, 0.0));
+double bezier_camera_param = 0.0f;
 const double ZOOM_SENSITIVITY = -3.0;
 const float MOVE_SPEED = 5.0; // units per second
 const float MOUSE_SENSITIVITY = 0.1f;
@@ -78,6 +81,16 @@ GLuint ViewProjMatrixID;		  //= glGetUniformLocation(programID, "VP");
 GLuint Texture;
 GLuint VertexArrayID;
 GLuint programID;
+float Blend[16] = {
+	1.0f, 0.0f, 0.0f, 0.0f,
+	-3.0f, 3.0f, 0.0f, 0.0f,
+	3.0f, -6.0f, 3.0f, 0.0f,
+	-1.0f, 3.0f, -3.0f, 1.0f};
+glm::mat4 blend_mat = glm::make_mat4(Blend);
+
+std::vector<glm::vec3> dynamic_camera_points;
+std::vector<glm::vec3> dynamic_camera_explore;
+
 // Function prototypes
 void glfw_onKey(GLFWwindow *window, int key, int scancode, int action, int mode);
 void glfw_onFramebufferSize(GLFWwindow *window, int width, int height);
@@ -86,6 +99,8 @@ void update(double elapsedTime);
 void showFPS(GLFWwindow *window);
 bool initOpenGL();
 void mac_patch(GLFWwindow *window);
+glm::vec3 get_bezier_points(double t, float *point_array);
+
 // Finds a Particle in ParticlesContainer which isn't used yet.
 // (i.e. life < 0);
 int FindUnusedParticle()
@@ -132,24 +147,28 @@ int main()
 	lightingShader.loadShaders("shaders/lighting_dir_point_spot.vert", "shaders/lighting_dir_point_spot.frag");
 
 	// Load meshes and textures
-	const int numModels = 1;
+	const int numModels = 2;
 	Mesh mesh[numModels];
 	Texture2D texture[numModels];
 
 	mesh[0].loadOBJ("models/sphere3.obj");
+	mesh[1].loadOBJother("models/mountain_rivers.obj", false);
 
 	// texture[0].loadTexture("textures/Earth_TEXTURE_CM.tga", true);
 	texture[0].loadTexture("textures/gray.png", true);
+	texture[1].loadTexture("textures/mountain_rivers.png", true);
 
 	// Model positions
 	glm::vec3 modelPos[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f), // barrel
+		glm::vec3(0.0f, 0.0f, 0.0f), // planet
+		glm::vec3(10.0f, 0.0f, 0.0f) // mountain
 
 	};
 
 	// Model scale
 	glm::vec3 modelScale[] = {
 		glm::vec3(0.4068f, 0.4068f, 0.4068), // barrel
+		glm::vec3(0.4068f, 0.4068f, 0.4068)  // barrel
 
 	};
 
@@ -158,6 +177,17 @@ int main()
 		glm::vec3(-5.0f, 3.8f, 0.0f),
 		glm::vec3(0.5f, 3.8f, 0.0f),
 		glm::vec3(5.0f, 3.8, 0.0f)};
+
+	// if (bezier_camera_param >= 0.90000001)
+	// {
+	// 	bezier_camera_param = 1.0;
+	// }
+	// else
+	// {
+	// 	bezier_camera_param += 0.0006;
+	// 	glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param, &dynamic_camera_points[0].x);
+	// 	fpsCamera.move(new_cam_point - fpsCamera.getPosition());
+	// }
 
 	double lastTime = glfwGetTime();
 
@@ -206,6 +236,16 @@ int main()
 
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (bezier_camera_param >= 0.90000001)
+		{
+			bezier_camera_param = 1.0;
+		}
+		else
+		{
+			bezier_camera_param += 0.0006;
+			glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param, &dynamic_camera_points[0].x);
+			fpsCamera.move(new_cam_point - fpsCamera.getPosition());
+		}
 
 		glm::mat4 model(1.0), view(1.0), projection(1.0);
 
@@ -407,7 +447,7 @@ int main()
 		lightingShader.setUniform("spotLight.on", gFlashlightOn);
 
 		// Render the scene
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < numModels; i++)
 		{
 			model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]); // * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
 			;
@@ -481,11 +521,14 @@ bool initOpenGL()
 	glfwSetScrollCallback(gWindow, glfw_onMouseScroll);
 
 	// Hides and grabs cursor, unlimited movement
-	glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	// glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
-
+	dynamic_camera_points.push_back(campos);
+	dynamic_camera_points.push_back(glm::vec3(80.0f, 10.0f, -10.0f));
+	dynamic_camera_points.push_back(glm::vec3(0.0f, 20.0f, -40.0f));
+	dynamic_camera_points.push_back(glm::vec3(-50.0f, 100.0f, 0.0f));
 	// Define the viewport dimensions
 	glViewport(0, 0, gWindowWidth, gWindowHeight);
 	glEnable(GL_DEPTH_TEST);
@@ -549,13 +592,13 @@ void update(double elapsedTime)
 	double mouseX, mouseY;
 
 	// Get the current mouse cursor position delta
-	glfwGetCursorPos(gWindow, &mouseX, &mouseY);
+	// glfwGetCursorPos(gWindow, &mouseX, &mouseY);
 
-	// Rotate the camera the difference in mouse distance from the center screen.  Multiply this delta by a speed scaler
-	fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
+	// // Rotate the camera the difference in mouse distance from the center screen.  Multiply this delta by a speed scaler
+	// fpsCamera.rotate((float)(gWindowWidth / 2.0 - mouseX) * MOUSE_SENSITIVITY, (float)(gWindowHeight / 2.0 - mouseY) * MOUSE_SENSITIVITY);
 
-	// Clamp mouse cursor to center of screen
-	glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
+	// // Clamp mouse cursor to center of screen
+	// glfwSetCursorPos(gWindow, gWindowWidth / 2.0, gWindowHeight / 2.0);
 
 	// Camera FPS movement
 
@@ -615,7 +658,7 @@ void showFPS(GLFWwindow *window)
 }
 void mac_patch(GLFWwindow *window)
 {
-	if (glfwGetTime() > 3.0)
+	if (glfwGetTime() > 6.0)
 	{
 		mac_moved = true;
 	}
@@ -631,4 +674,11 @@ void mac_patch(GLFWwindow *window)
 	{
 		mac_moved = true;
 	}
+}
+
+glm::vec3 get_bezier_points(double t, float *point_array)
+{
+	// float *point_array = &dynamic_points[0].x;
+	glm::mat4x3 control_p = glm::make_mat4x3(point_array);
+	return control_p * blend_mat * glm::vec4(1.0f, t, t * t, t * t * t);
 }
