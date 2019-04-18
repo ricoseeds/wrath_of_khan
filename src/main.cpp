@@ -45,7 +45,7 @@ int gWindowHeight = 768;
 GLFWwindow *gWindow = NULL;
 bool gWireframe = false;
 bool gFlashlightOn = true;
-glm::vec4 gClearColor(0.0f, 0.0f, 0.1f, 1.0f);
+glm::vec4 gClearColor(0.16f, 0.16f, 0.7f, 1.0f);
 static bool mac_moved = false;
 const int MaxParticles = 10000;
 Particle ParticlesContainer[MaxParticles];
@@ -245,8 +245,13 @@ int main()
 			bezier_camera_param = 1.0;
 			if (!cam_positioned)
 			{
+				campos = glm::vec3(89.628868, 14.465105, 100.186050);
 				fpsCamera.setPosition(glm::vec3(90.628868, 21.465105, 129.186050));
-				fpsCamera.setTarget(glm::vec3(-40.628868, 0.465105, 0.186050));
+				fpsCamera.setTarget(glm::vec3(-80.628868, 0.465105, 0.186050));
+				dynamic_camera_explore.push_back(campos);
+				dynamic_camera_explore.push_back(glm::vec3(86.0f, 3.5f, 56.0f));
+				dynamic_camera_explore.push_back(glm::vec3(91.0f, -1.0f, 33.0f));
+				dynamic_camera_explore.push_back(glm::vec3(90.0f, 3.0f, 46.0f));
 			}
 
 			cam_positioned = true;
@@ -256,6 +261,20 @@ int main()
 			bezier_camera_param += 0.0006;
 			glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param, &dynamic_camera_points[0].x);
 			fpsCamera.move(new_cam_point - fpsCamera.getPosition());
+		}
+		if (cam_positioned)
+		{
+			if (bezier_camera_param2 >= 0.90000001)
+			{
+				bezier_camera_param2 = 1.0f;
+			}
+
+			else
+			{
+				bezier_camera_param2 += 0.0006;
+				glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param2, &dynamic_camera_explore[0].x);
+				fpsCamera.move(new_cam_point - fpsCamera.getPosition());
+			}
 		}
 
 		glm::mat4 model(1.0), view(1.0), projection(1.0);
@@ -268,7 +287,7 @@ int main()
 
 		// update the view (camera) position
 		glm::vec3 viewPos;
-		std::cout << glm::to_string(fpsCamera.getPosition()) << std::endl;
+		// std::cout << glm::to_string(fpsCamera.getPosition()) << std::endl;
 		viewPos.x = fpsCamera.getPosition().x;
 		viewPos.y = fpsCamera.getPosition().y;
 		viewPos.z = fpsCamera.getPosition().z;
@@ -278,6 +297,15 @@ int main()
 
 		//BEGIN PARTICLES
 		int newparticles = (int)(deltaTime * 10000.0);
+		std::cout << (glfwGetTime() - lastTime) << "\n";
+		if (glfwGetTime() < 8.0)
+		{
+			newparticles = 0;
+		}
+		else
+		{
+			newparticles = (int)(deltaTime * 10000.0);
+		}
 		if (newparticles > (int)(0.016f * 10000.0))
 			newparticles = (int)(0.016f * 10000.0);
 		lightingShader.use();
@@ -315,7 +343,7 @@ int main()
 			std::string slin = "pointLights[" + boost::lexical_cast<std::string>(i) + "].linear";
 			std::string sexp = "pointLights[" + boost::lexical_cast<std::string>(i) + "].exponent";
 			lightingShader.setUniform(samb.c_str(), glm::vec3(0.2f, 0.2f, 0.2f));
-			lightingShader.setUniform(sdiff.c_str(), glm::vec3(1.0f, 1.0f, 1.0f)); //white light
+			lightingShader.setUniform(sdiff.c_str(), glm::vec3(1.0f, 1.0f, 0.0f)); //white light
 			lightingShader.setUniform(sspec.c_str(), glm::vec3(1.0f, 1.0f, 1.0f));
 			// // lightingShader.setUniform("pointLights[2].position", glm::vec3(0.0f, -1.0f, 0.0f));
 			lightingShader.setUniform(scons.c_str(), 1.0f);
@@ -649,6 +677,10 @@ bool initOpenGL()
 	dynamic_camera_points.push_back(glm::vec3(0.0f, 10.0f, 10.0f));
 	dynamic_camera_points.push_back(glm::vec3(0.0f, 4.0f, 0.0f));
 	dynamic_camera_points.push_back(glm::vec3(0.0f, 8.0f, -10.0f));
+	// dynamic_camera_explore.push_back(campos);
+	// dynamic_camera_explore.push_back(glm::vec3(86.0f, 3.5f, 56.0f));
+	// dynamic_camera_explore.push_back(glm::vec3(91.0f, -1.0f, 33.0f));
+	// dynamic_camera_explore.push_back(glm::vec3(90.0f, 3.0f, 46.0f));
 	// Define the viewport dimensions
 	glViewport(0, 0, gWindowWidth, gWindowHeight);
 	glEnable(GL_DEPTH_TEST);

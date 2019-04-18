@@ -226,6 +226,20 @@ bool Mesh::loadOBJother(const std::string &filename, bool liv_flag)
 		}
 
 		// Create and initialize the buffers
+		// initBuffers();
+
+		for (size_t i = 0; i < mVertices.size(); i += 3)
+		{
+			glm::vec3 A = mVertices[i].position;
+			glm::vec3 B = mVertices[i + 1].position;
+			glm::vec3 C = mVertices[i + 2].position;
+			glm::vec3 AB = B - A;
+			glm::vec3 AC = C - A;
+			glm::vec3 ABxAC = glm::normalize(glm::cross(AB, AC));
+			mVertices[i].normal = ABxAC;
+			mVertices[i + 1].normal = ABxAC;
+			mVertices[i + 2].normal = ABxAC;
+		}
 		initBuffers();
 
 		return (mLoaded = true);
