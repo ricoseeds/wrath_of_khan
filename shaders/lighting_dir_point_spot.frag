@@ -91,7 +91,14 @@ void main()
 	if (spotLight.on == 1)
 		outColor += calcSpotLightColor(spotLight, normal, FragPos, viewDir);
 
-	frag_color = vec4(ambient + outColor, 1.0f);
+	//frag_color = vec4(ambient + outColor + vec3(0.0f, 1.0f, 0.0f), 1.0f);
+	//if(FragPos.y > 0.8)
+	//	frag_color = vec4(ambient + outColor + vec3(0.0f, 1.0f, 0.0f), 1.0f);
+	//else
+	//	frag_color = vec4(ambient + outColor + vec3(1.0f, 1.0f, 0.0f), 1.0f);
+
+
+	frag_color = vec4(ambient + outColor , 1.0f);
 }
 
 //-----------------------------------------------------------------------------------------------
