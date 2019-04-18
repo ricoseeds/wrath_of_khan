@@ -86,7 +86,11 @@ tex = ["vt 0.0 0.0",
 "vt 0.64 0.28",
 "vt 0.68 0.68",
 "vt 0.88 0.68",
-"vt 0.88 0.88"]
+"vt 0.88 0.88",
+"vt 0.38 0.38",
+"vt 0.62 0.38",
+"vt 0.62 0.62"
+]
 
 File.open("models/mountain_rivers.obj", 'w') { |file| 
     for i in 0..a.length - 1
@@ -124,12 +128,13 @@ File.open("models/mountain_rivers.obj", 'w') { |file|
             # file.write("f " + (c + j + 1).to_s  + " " + k.to_s + " " + (c + j + 2).to_s + "\n")
             # file.write("f " + (c + j + 2).to_s + " "  + (k).to_s + " " + (k+1).to_s  + "\n")
             if (j <= ridge_left + 5) || (j >= ridge_right -5)
-                if a[i][j] >= min_height && a[i][j] <= max_height / 10
-                    file.write("f " + (c + j + 1).to_s  + "/19/ " + k.to_s + "/20/ " + (c + j + 2).to_s + "/21/\n")
-                    file.write("f " + (c + j + 2).to_s + "/19/ "  + (k).to_s + "/20/ " + (k+1).to_s  + "/21/\n")
-                elsif a[i][j] > max_height / 10 && a[i][j] <= max_height / 6
+                # if a[i][j] >= min_height && a[i][j] <= max_height / 10
+                if a[i][j] >= min_height && a[i][j] <= min_height + 20 
                     file.write("f " + (c + j + 1).to_s  + "/16/ " + k.to_s + "/17/ " + (c + j + 2).to_s + "/18/\n")
                     file.write("f " + (c + j + 2).to_s + "/16/ "  + (k).to_s + "/17/ " + (k+1).to_s  + "/18/\n")
+                elsif a[i][j] > min_height + 20 && a[i][j] <= max_height / 6
+                    file.write("f " + (c + j + 1).to_s  + "/19/ " + k.to_s + "/20/ " + (c + j + 2).to_s + "/21/\n")
+                    file.write("f " + (c + j + 2).to_s + "/19/ "  + (k).to_s + "/20/ " + (k+1).to_s  + "/21/\n")
                 elsif a[i][j] > max_height / 6 && a[i][j] <= max_height / 4
                     file.write("f " + (c + j + 1).to_s  + "/1/ " + k.to_s + "/2/ " + (c + j + 2).to_s + "/3/\n")
                     file.write("f " + (c + j + 2).to_s + "/1/ "  + (k).to_s + "/2/ " + (k+1).to_s  + "/3/\n")
@@ -144,8 +149,16 @@ File.open("models/mountain_rivers.obj", 'w') { |file|
                     file.write("f " + (c + j + 2).to_s + "/13/ "  + (k).to_s + "/14/ " + (k+1).to_s  + "/15/\n")
                 end
             else
-                file.write("f " + (c + j + 1).to_s  + "/4/ " + k.to_s + "/5/ " + (c + j + 2).to_s + "/6/\n")
-                file.write("f " + (c + j + 2).to_s + "/4/ "  + (k).to_s + "/5/ " + (k+1).to_s  + "/6/\n")
+                # if rand(10) < 7
+                    file.write("f " + (c + j + 1).to_s  + "/4/ " + k.to_s + "/5/ " + (c + j + 2).to_s + "/6/\n")
+                    file.write("f " + (c + j + 2).to_s + "/4/ "  + (k).to_s + "/5/ " + (k+1).to_s  + "/6/\n")
+                # elsif rand(10) >= 7 && rand(10) < 8
+                #     file.write("f " + (c + j + 1).to_s  + "/22/ " + k.to_s + "/23/ " + (c + j + 2).to_s + "/24/\n")
+                #     file.write("f " + (c + j + 2).to_s + "/22/ "  + (k).to_s + "/23/ " + (k+1).to_s  + "/24/\n")
+                # elsif rand(10) >= 8
+                #     file.write("f " + (c + j + 1).to_s  + "/13/ " + k.to_s + "/14/ " + (c + j + 2).to_s + "/15/\n")
+                #     file.write("f " + (c + j + 2).to_s + "/13/ "  + (k).to_s + "/14/ " + (k+1).to_s  + "/15/\n")  
+                # end
             end
             k=k+1
         end
