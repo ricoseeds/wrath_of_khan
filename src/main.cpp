@@ -45,7 +45,7 @@ int gWindowHeight = 768;
 GLFWwindow *gWindow = NULL;
 bool gWireframe = false;
 bool gFlashlightOn = true;
-glm::vec4 gClearColor(0.016f, 0.016f, 0.2f, 1.0f);
+glm::vec4 gClearColor(0.016f, 0.016f, 0.1f, 1.0f);
 static bool mac_moved = false;
 const int MaxParticles = 10000;
 Particle ParticlesContainer[MaxParticles];
@@ -585,7 +585,7 @@ int main()
 			lightingShader.setUniform("material.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 			lightingShader.setUniformSampler("material.diffuseMap", 0);
 			lightingShader.setUniform("material.specular", glm::vec3(0.2f, 0.2f, 0.2f));
-			lightingShader.setUniform("material.shininess", 1000.0f);
+			lightingShader.setUniform("material.shininess", 10.0f);
 
 			texture[i].bind(0); // set the texture before drawing.  Our simple OBJ mesh loader does not do materials yet.
 			mesh[i].draw();		// Render the OBJ mesh
