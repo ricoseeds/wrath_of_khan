@@ -342,51 +342,51 @@ bool Mesh::loadOBJ(const std::string &filename)
 
 		// Close the file
 		fin.close();
-		int width, height, components;
+		// int width, height, components;
 
-		// Use stbi image library to load our image
-		// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/iit.jpeg", &width, &height, &components, STBI_rgb_alpha);
-		unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/perlin2.jpg", &width, &height, &components, STBI_rgb_alpha);
-		// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/craters.png", &width, &height, &components, STBI_rgb_alpha);
-		// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/tux.jpg", &width, &height, &components, STBI_rgb_alpha);
-		int widthInBytes = width * 4;
-		double grayscale, grayscale_h = 0.0, grayscale_l = 255;
-		double texel[height][width];
-		//changeable
-		double deform_low = -0.01;
-		double deform_high = 0.08;
-		for (int row = 0; row < height; row++)
-		{
-			for (int col = 0; col < width; col++)
-			{
-				unsigned char *pixelOffset = imageData + (row + height * col) * 4;
+		// // Use stbi image library to load our image
+		// // unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/iit.jpeg", &width, &height, &components, STBI_rgb_alpha);
+		// unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/perlin2.jpg", &width, &height, &components, STBI_rgb_alpha);
+		// // unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/craters.png", &width, &height, &components, STBI_rgb_alpha);
+		// // unsigned char *imageData = stbi_load("/Users/arghachakraborty/Projects/wrath_of_khan/textures/tux.jpg", &width, &height, &components, STBI_rgb_alpha);
+		// int widthInBytes = width * 4;
+		// double grayscale, grayscale_h = 0.0, grayscale_l = 255;
+		// double texel[height][width];
+		// //changeable
+		// double deform_low = -0.01;
+		// double deform_high = 0.08;
+		// for (int row = 0; row < height; row++)
+		// {
+		// 	for (int col = 0; col < width; col++)
+		// 	{
+		// 		unsigned char *pixelOffset = imageData + (row + height * col) * 4;
 
-				unsigned int r = pixelOffset[0];
-				unsigned int g = pixelOffset[1];
-				unsigned int b = pixelOffset[2];
-				grayscale = (0.2126f * r) + (0.7152f * g) + (0.0722f * b);
-				if (grayscale_h <= grayscale)
-				{
-					grayscale_h = grayscale;
-				}
-				if (grayscale_l >= grayscale)
-				{
-					grayscale_l = grayscale;
-				}
-				texel[row][col] = grayscale;
-			}
-		}
+		// 		unsigned int r = pixelOffset[0];
+		// 		unsigned int g = pixelOffset[1];
+		// 		unsigned int b = pixelOffset[2];
+		// 		grayscale = (0.2126f * r) + (0.7152f * g) + (0.0722f * b);
+		// 		if (grayscale_h <= grayscale)
+		// 		{
+		// 			grayscale_h = grayscale;
+		// 		}
+		// 		if (grayscale_l >= grayscale)
+		// 		{
+		// 			grayscale_l = grayscale;
+		// 		}
+		// 		texel[row][col] = grayscale;
+		// 	}
+		// }
 
-		for (size_t i = 0; i < tempVertices.size(); i++)
-		{
-			glm::vec3 perturbed = glm::normalize(tempVertices[i]);
-			float u = atan2(perturbed.x, perturbed.z) / (2.0 * M_PI) + 0.5;
-			float v = 0.5 - asin(perturbed.y) / M_PI;
-			double this_grayscale = texel[(int)floor(u * (double)width)][(int)floor(v * (double)height)];
-			double t = (this_grayscale - grayscale_l) / (grayscale_h - grayscale_l);
-			double deform_param = (deform_low * (double)(1 - t)) + (double)(t * deform_high);
-			tempVertices[i] += glm::vec3(deform_param, deform_param, deform_param);
-		}
+		// for (size_t i = 0; i < tempVertices.size(); i++)
+		// {
+		// 	glm::vec3 perturbed = glm::normalize(tempVertices[i]);
+		// 	float u = atan2(perturbed.x, perturbed.z) / (2.0 * M_PI) + 0.5;
+		// 	float v = 0.5 - asin(perturbed.y) / M_PI;
+		// 	double this_grayscale = texel[(int)floor(u * (double)width)][(int)floor(v * (double)height)];
+		// 	double t = (this_grayscale - grayscale_l) / (grayscale_h - grayscale_l);
+		// 	double deform_param = (deform_low * (double)(1 - t)) + (double)(t * deform_high);
+		// 	tempVertices[i] += glm::vec3(deform_param, deform_param, deform_param);
+		// }
 
 		// For each vertex of each triangle
 		for (unsigned int i = 0; i < vertexIndices.size(); i++)
@@ -418,18 +418,18 @@ bool Mesh::loadOBJ(const std::string &filename)
 
 		// Create and initialize the buffers
 		// make_displacement();
-		for (size_t i = 0; i < mVertices.size(); i += 3)
-		{
-			glm::vec3 A = mVertices[i].position;
-			glm::vec3 B = mVertices[i + 1].position;
-			glm::vec3 C = mVertices[i + 2].position;
-			glm::vec3 AB = B - A;
-			glm::vec3 AC = C - A;
-			glm::vec3 ABxAC = glm::normalize(glm::cross(AB, AC));
-			mVertices[i].normal = ABxAC;
-			mVertices[i + 1].normal = ABxAC;
-			mVertices[i + 2].normal = ABxAC;
-		}
+		// for (size_t i = 0; i < mVertices.size(); i += 3)
+		// {
+		// 	glm::vec3 A = mVertices[i].position;
+		// 	glm::vec3 B = mVertices[i + 1].position;
+		// 	glm::vec3 C = mVertices[i + 2].position;
+		// 	glm::vec3 AB = B - A;
+		// 	glm::vec3 AC = C - A;
+		// 	glm::vec3 ABxAC = glm::normalize(glm::cross(AB, AC));
+		// 	mVertices[i].normal = ABxAC;
+		// 	mVertices[i + 1].normal = ABxAC;
+		// 	mVertices[i + 2].normal = ABxAC;
+		// }
 		initBuffers();
 		// make_displacement();
 

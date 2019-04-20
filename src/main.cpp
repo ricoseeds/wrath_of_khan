@@ -45,7 +45,7 @@ int gWindowHeight = 768;
 GLFWwindow *gWindow = NULL;
 bool gWireframe = false;
 bool gFlashlightOn = true;
-glm::vec4 gClearColor(0.016f, 0.016f, 0.1f, 1.0f);
+glm::vec4 gClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 static bool mac_moved = false;
 const int MaxParticles = 10000;
 Particle ParticlesContainer[MaxParticles];
@@ -70,7 +70,7 @@ GLuint billboard_vertex_buffer;
 GLuint particles_position_buffer;
 GLuint particles_color_buffer;
 GLuint TextureID;
-glm::vec3 campos(0.0f, 0.0f, 20.0f);
+glm::vec3 campos(0.0f, 0.0f, 5.0f);
 FPSCamera fpsCamera(campos, glm::vec3(0.0, 0.0, 0.0));
 double bezier_camera_param = 0.0f;
 double bezier_camera_param2 = 0.0f;
@@ -154,28 +154,28 @@ int main()
 	Mesh mesh[numModels];
 	Texture2D texture[numModels];
 
-	mesh[0].loadOBJ("models/sphere3.obj");
-	mesh[1].loadOBJother("models/mountain_rivers.obj", false);
-	mesh[2].loadOBJ("models/Genesis_Bomb.obj");
+	mesh[0].loadOBJ("models/watergun.obj");
+	mesh[1].loadOBJ("models/watergun.obj");
+	mesh[2].loadOBJ("models/watergun.obj");
 
-	// texture[0].loadTexture("textures/Earth_TEXTURE_CM.tga", true);
 	texture[0].loadTexture("textures/gray.png", true);
-	texture[1].loadTexture("textures/mountain_rivers.png", true);
+	texture[1].loadTexture("textures/gray.png", true);
 	texture[2].loadTexture("textures/gray.png", true);
 
 	// Model positions
 	glm::vec3 modelPos[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),  // planet
-		glm::vec3(10.0f, 0.0f, 0.0f), // mountain
-		glm::vec3(0.0f, 0.0f, 25.0f)  // bomb
+		glm::vec3(-2.0f, -1.0f, 0.0f), // planet
+		glm::vec3(2.0f, 0.0f, 0.0f),   // planet
+		glm::vec3(-2.0f, 0.0f, 0.0f)   // planet
+									   // bomb
 
 	};
 
 	// Model scale
 	glm::vec3 modelScale[] = {
 		glm::vec3(0.4068f, 0.4068f, 0.4068), // barrel
-		glm::vec3(0.4068f, 0.4068f, 0.4068), // barrel
-		glm::vec3(0.4068f, 0.4068f, 0.4068)  // barrel
+		glm::vec3(0.2068f, 0.2068f, 0.2068), // barrel
+		glm::vec3(0.3068f, 0.3068f, 0.3068)  // barrel
 
 	};
 
@@ -184,17 +184,6 @@ int main()
 		glm::vec3(-5.0f, 3.8f, 0.0f),
 		glm::vec3(0.5f, 3.8f, 0.0f),
 		glm::vec3(5.0f, 3.8, 0.0f)};
-
-	// if (bezier_camera_param >= 0.90000001)
-	// {
-	// 	bezier_camera_param = 1.0;
-	// }
-	// else
-	// {
-	// 	bezier_camera_param += 0.0006;
-	// 	glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param, &dynamic_camera_points[0].x);
-	// 	fpsCamera.move(new_cam_point - fpsCamera.getPosition());
-	// }
 
 	double lastTime = glfwGetTime();
 
@@ -246,44 +235,6 @@ int main()
 
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		if (bezier_camera_param >= 0.90000001)
-		{
-			bezier_camera_param = 1.0;
-			gClearColor = glm::vec4(0.26f, 0.26f, 0.8f, 1.0f);
-			glClearColor(gClearColor.r, gClearColor.g, gClearColor.b, gClearColor.a);
-			if (!cam_positioned)
-			{
-				campos = glm::vec3(89.628868, 14.465105, 100.186050);
-				fpsCamera.setPosition(glm::vec3(90.628868, 21.465105, 129.186050));
-				fpsCamera.setTarget(glm::vec3(-80.628868, 0.465105, 0.186050));
-				dynamic_camera_explore.push_back(campos);
-				dynamic_camera_explore.push_back(glm::vec3(86.0f, 3.5f, 56.0f));
-				dynamic_camera_explore.push_back(glm::vec3(91.0f, -1.0f, 33.0f));
-				dynamic_camera_explore.push_back(glm::vec3(90.0f, 3.0f, 46.0f));
-			}
-
-			cam_positioned = true;
-		}
-		else
-		{
-			bezier_camera_param += 0.0008;
-			glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param, &dynamic_camera_points[0].x);
-			fpsCamera.move(new_cam_point - fpsCamera.getPosition());
-		}
-		if (cam_positioned)
-		{
-			if (bezier_camera_param2 >= 0.90000001)
-			{
-				bezier_camera_param2 = 1.0f;
-			}
-
-			else
-			{
-				bezier_camera_param2 += 0.0006;
-				glm::vec3 new_cam_point = get_bezier_points(bezier_camera_param2, &dynamic_camera_explore[0].x);
-				fpsCamera.move(new_cam_point - fpsCamera.getPosition());
-			}
-		}
 
 		glm::mat4 model(1.0), view(1.0), projection(1.0);
 
@@ -291,7 +242,7 @@ int main()
 		view = fpsCamera.getViewMatrix();
 		glm::mat4 ViewMatrix = view;
 		// Create the projection matrix
-		projection = glm::perspective(glm::radians(fpsCamera.getFOV()), (float)gWindowWidth / (float)gWindowHeight, 0.1f, 200.0f);
+		projection = glm::perspective(glm::radians(35.0f), (float)gWindowWidth / (float)gWindowHeight, 0.1f, 200.0f);
 
 		// update the view (camera) position
 		glm::vec3 viewPos;
@@ -306,20 +257,14 @@ int main()
 		//BEGIN PARTICLES
 		int newparticles = (int)(deltaTime * 10000.0);
 		// std::cout << glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) << "\n";
-		if (glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) < 1.3)
-		{
-			hit = true;
-			save_time = glfwGetTime();
-		}
+		// if (glm::distance(modelPos[2], glm::vec3(0.0f, 0.0f, 0.0f)) < 1.3)
+		// {
+		// 	hit = true;
+		// 	save_time = glfwGetTime();
+		// }
+		//TODO
 
-		if (!hit)
-		{
-			newparticles = 0;
-		}
-		else
-		{
-			newparticles = (int)(deltaTime * 10000.0);
-		}
+		newparticles = (int)(deltaTime * 10000.0);
 		if (newparticles > (int)(0.016f * 10000.0))
 			newparticles = (int)(0.016f * 10000.0);
 		lightingShader.use();
@@ -346,75 +291,18 @@ int main()
 		lightingShader.setUniform("spotLight.exponent", 0.0017f);
 		lightingShader.setUniform("spotLight.on", gFlashlightOn);
 
-		for (size_t i = 0; i < 30; i++)
-
-		{
-			std::string sposi = "pointLights[" + boost::lexical_cast<std::string>(i) + "].position";
-			std::string samb = "pointLights[" + boost::lexical_cast<std::string>(i) + "].ambient";
-			std::string sdiff = "pointLights[" + boost::lexical_cast<std::string>(i) + "].diffuse";
-			std::string sspec = "pointLights[" + boost::lexical_cast<std::string>(i) + "].specular";
-			std::string scons = "pointLights[" + boost::lexical_cast<std::string>(i) + "].constant";
-			std::string slin = "pointLights[" + boost::lexical_cast<std::string>(i) + "].linear";
-			std::string sexp = "pointLights[" + boost::lexical_cast<std::string>(i) + "].exponent";
-			lightingShader.setUniform(samb.c_str(), glm::vec3(0.2f, 0.2f, 0.2f));
-			lightingShader.setUniform(sdiff.c_str(), glm::vec3(1.0f, 1.0f, 1.0f)); //white light
-			lightingShader.setUniform(sspec.c_str(), glm::vec3(1.0f, 1.0f, 1.0f));
-			// // lightingShader.setUniform("pointLights[2].position", glm::vec3(0.0f, -1.0f, 0.0f));
-			lightingShader.setUniform(scons.c_str(), 1.0f);
-			lightingShader.setUniform(slin.c_str(), 0.0022f);
-			lightingShader.setUniform(sexp.c_str(), 0.0020f);
-		}
-
-		if (hit && glfwGetTime() < 6.5)
-		{
-
-			for (int i = 0; i < newparticles / 8; i++)
-			{
-				int particleIndex = FindUnusedParticle();
-				ParticlesContainer[particleIndex].life = 0.1f; // This particle will live 5 seconds.
-				// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
-				ParticlesContainer[particleIndex].pos = glm::vec3(0, 1, 0);
-
-				float spread = 1.5f;
-				glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
-				// Very bad way to generate a random direction;
-				// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
-				// combined with some user-controlled parameters (main direction, spread, etc)
-				glm::vec3 randomdir = glm::vec3(
-					(rand() % 2000 - 1000.0f) / 1000.0f,
-					(rand() % 2000 - 1000.0f) / 1000.0f,
-					(rand() % 2000 - 1000.0f) / 1000.0f);
-
-				ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
-
-				ParticlesContainer[particleIndex].r = 255;
-				ParticlesContainer[particleIndex].g = 255 - (rand() % 250);
-				ParticlesContainer[particleIndex].b = 0;
-				ParticlesContainer[particleIndex].a = 255;
-
-				ParticlesContainer[particleIndex].size = 0.06f;
-				// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
-			}
-		}
-		circle_radii += 0.001;
-		if (circle_radii > 1)
-		{
-			circle_radii = 1.0f;
-		}
-
-		for (int i = newparticles / 8; i < newparticles; i++)
+		for (int i = 0; i < newparticles / 4; i++)
 		{
 			int particleIndex = FindUnusedParticle();
-			ParticlesContainer[particleIndex].life = 0.3f; // This particle will live 5 seconds.
+			ParticlesContainer[particleIndex].life = 1.5f; // This particle will live 5 seconds.
 			// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
-			double y = sqrt(1 - circle_radii * circle_radii);
-			double t = RandomFloat(0.0f, (float)2 * M_PI);
-			ParticlesContainer[particleIndex].pos = glm::vec3(circle_radii * cos(t), y, circle_radii * sin(t));
+			ParticlesContainer[particleIndex].pos = glm::vec3(-1.3, 0, 0);
 
 			float spread = 1.5f;
-			// glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
-			glm::vec3 maindir = ParticlesContainer[particleIndex].pos;
-
+			glm::vec3 maindir = glm::vec3(5.0f, 10.0f, 0.0f); // main direction of thw particles
+			// Very bad way to generate a random direction;
+			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
+			// combined with some user-controlled parameters (main direction, spread, etc)
 			glm::vec3 randomdir = glm::vec3(
 				(rand() % 2000 - 1000.0f) / 1000.0f,
 				(rand() % 2000 - 1000.0f) / 1000.0f,
@@ -422,21 +310,104 @@ int main()
 
 			ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
 
-			// Very bad way to generate a random color
-			// ParticlesContainer[particleIndex].r = rand() % 256;
-			// ParticlesContainer[particleIndex].g = rand() % 256;
-			// ParticlesContainer[particleIndex].b = rand() % 256;
-			// ParticlesContainer[particleIndex].a = (rand() % 256) / 3;
+			ParticlesContainer[particleIndex].r = 90;
+			ParticlesContainer[particleIndex].g = 90;
+			if (RandomFloat(0.0f, 10.0f) < 8.0)
+			{
+				ParticlesContainer[particleIndex].b = 255;
+			}
+			else
+			{
+				ParticlesContainer[particleIndex].b = 200;
+			}
 
-			ParticlesContainer[particleIndex].r = 255;
-			ParticlesContainer[particleIndex].g = 255; // - (rand() % 250);
-			ParticlesContainer[particleIndex].b = 0;
-			ParticlesContainer[particleIndex].a = 255; //(rand() % 256) / 3;
+			// ParticlesContainer[particleIndex].b = RandomFloat(200.0f, 255.0f);
+			;
+			ParticlesContainer[particleIndex].a = RandomFloat(10.0f, 255.0f);
 
-			ParticlesContainer[particleIndex].size = 0.06f;
+			// ParticlesContainer[particleIndex].size = 0.06f;
+			ParticlesContainer[particleIndex].size = RandomFloat(0.01, 0.08);
 			// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
 		}
-		// Simulate all particles
+
+		for (int i = newparticles / 4; i < newparticles / 2; i++)
+		{
+			int particleIndex = FindUnusedParticle();
+			ParticlesContainer[particleIndex].life = 1.0f; // This particle will live 5 seconds.
+			// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
+			ParticlesContainer[particleIndex].pos = glm::vec3(1.6, 0.4, 0);
+
+			float spread = 1.5f;
+			glm::vec3 maindir = glm::vec3(-5.0f, 10.0f, 0.0f); // main direction of thw particles
+			// Very bad way to generate a random direction;
+			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
+			// combined with some user-controlled parameters (main direction, spread, etc)
+			glm::vec3 randomdir = glm::vec3(
+				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f);
+
+			ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
+
+			ParticlesContainer[particleIndex].r = 90;
+			ParticlesContainer[particleIndex].g = 90;
+			if (RandomFloat(0.0f, 10.0f) < 8.0)
+			{
+				ParticlesContainer[particleIndex].b = 255;
+			}
+			else
+			{
+				ParticlesContainer[particleIndex].b = 200;
+			}
+
+			// ParticlesContainer[particleIndex].b = RandomFloat(200.0f, 255.0f);
+			;
+			ParticlesContainer[particleIndex].a = RandomFloat(10.0f, 255.0f);
+
+			// ParticlesContainer[particleIndex].size = 0.06f;
+			ParticlesContainer[particleIndex].size = RandomFloat(0.01, 0.08);
+			// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
+		}
+
+		for (int i = newparticles / 2; i < newparticles; i++)
+		{
+			int particleIndex = FindUnusedParticle();
+			ParticlesContainer[particleIndex].life = 0.5f; // This particle will live 5 seconds.
+			// ParticlesContainer[particleIndex].pos = glm::vec3(0, 0, -11.0f);
+			ParticlesContainer[particleIndex].pos = glm::vec3(-1.3, 0.79, 0);
+
+			float spread = 1.5f;
+			glm::vec3 maindir = glm::vec3(10.0f, 10.0f, 0.0f); // main direction of thw particles
+			// Very bad way to generate a random direction;
+			// See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
+			// combined with some user-controlled parameters (main direction, spread, etc)
+			glm::vec3 randomdir = glm::vec3(
+				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f,
+				(rand() % 2000 - 1000.0f) / 1000.0f);
+
+			ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
+
+			ParticlesContainer[particleIndex].r = 150;
+			ParticlesContainer[particleIndex].g = 90;
+			if (RandomFloat(0.0f, 10.0f) < 8.0)
+			{
+				ParticlesContainer[particleIndex].b = 255;
+			}
+			else
+			{
+				ParticlesContainer[particleIndex].b = 200;
+			}
+
+			// ParticlesContainer[particleIndex].b = RandomFloat(200.0f, 255.0f);
+			;
+			ParticlesContainer[particleIndex].a = RandomFloat(10.0f, 255.0f);
+
+			// ParticlesContainer[particleIndex].size = 0.06f;
+			ParticlesContainer[particleIndex].size = RandomFloat(0.01, 0.08);
+			// ParticlesContainer[particleIndex].size = (rand() % 1000) / 2000.0f + 0.1f;
+		}
+
 		int ParticlesCount = 0;
 		for (int i = 0; i < MaxParticles; i++)
 		{
@@ -454,12 +425,6 @@ int main()
 					// Simulate simple physics : gravity only, no collisions
 					p.speed += glm::vec3(0.0f, -9.81f, 0.0f) * (float)deltaTime * 0.5f;
 					p.pos += p.speed * (float)deltaTime;
-					if (i < 30)
-					{
-						// std::cout << glm::to_string(p.pos) << std::endl;
-						std::string bui = "pointLights[" + boost::lexical_cast<std::string>(i) + "].position";
-						lightingShader.setUniform(bui.c_str(), p.pos);
-					}
 
 					// std::cout << glm::to_string(p.pos) << std::endl;
 					p.cameradistance = glm::length2(p.pos - CameraPosition);
@@ -563,20 +528,47 @@ int main()
 		lightingShader.use();
 
 		// Render the scene
-		for (int i = 0; i < numModels; i++)
+		// Point Light 1
+		lightingShader.setUniform("pointLights[0].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setUniform("pointLights[0].diffuse", glm::vec3(1.0f, 1.0f, 1.0f)); // green-ish light
+		lightingShader.setUniform("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.setUniform("pointLights[0].position", pointLightPos[0]);
+		lightingShader.setUniform("pointLights[0].constant", 1.0f);
+		lightingShader.setUniform("pointLights[0].linear", 0.022f);
+		lightingShader.setUniform("pointLights[0].exponent", 0.020f);
+
+		// Point Light 2
+		lightingShader.setUniform("pointLights[1].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setUniform("pointLights[1].diffuse", glm::vec3(1.0f, 1.0f, 1.0f)); // red-ish light
+		lightingShader.setUniform("pointLights[1].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.setUniform("pointLights[1].position", pointLightPos[1]);
+		lightingShader.setUniform("pointLights[1].constant", 1.0f);
+		lightingShader.setUniform("pointLights[1].linear", 0.022f);
+		lightingShader.setUniform("pointLights[1].exponent", 0.020f);
+
+		// Point Light 3
+		lightingShader.setUniform("pointLights[2].ambient", glm::vec3(0.2f, 0.2f, 0.2f));
+		lightingShader.setUniform("pointLights[2].diffuse", glm::vec3(1.0f, 1.0f, 1.0f)); // blue-ish light
+		lightingShader.setUniform("pointLights[2].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.setUniform("pointLights[2].position", pointLightPos[2]);
+		lightingShader.setUniform("pointLights[2].constant", 1.0f);
+		lightingShader.setUniform("pointLights[2].linear", 0.22f);
+		lightingShader.setUniform("pointLights[2].exponent", 0.20f);
+		for (int i = 0; i < 3; i++)
 		{
-			if (i == 2) //bomb
+			if (i == 0)
 			{
-				if (!hit)
-				{
-					modelPos[i] -= glm::vec3(0.002f, -0.004f, 0.1f);
-					model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]) * glm::rotate(glm::mat4(1.0), glm::radians((float)(-90.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
-				}
+				model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]) * glm::rotate(glm::mat4(1.0), glm::radians((float)(-90)), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0), glm::radians((float)(34)), glm::vec3(0.0f, 1.0f, 0.0f));
 			}
-			else
+			else if (i == 1)
 			{
-				model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]);
+				model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i] * 0.8f) * glm::rotate(glm::mat4(1.0), glm::radians((float)(-90)), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0), glm::radians((float)(-44)), glm::vec3(0.0f, 1.0f, 0.0f));
 			}
+			else if (i == 2)
+			{
+				model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]) * glm::rotate(glm::mat4(1.0), glm::radians((float)(-90)), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0), glm::radians((float)(39)), glm::vec3(0.0f, 1.0f, 0.0f));
+			}
+			// model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]) * glm::rotate(glm::mat4(1.0), glm::radians((float)(-90)), glm::vec3(1.0f, 0.0f, 0.0f));
 
 			// model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]); // * glm::rotate(glm::mat4(1.0), glm::radians((float)(glfwGetTime() * 100.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
 			lightingShader.setUniform("model", model);
@@ -780,7 +772,7 @@ void showFPS(GLFWwindow *window)
 }
 void mac_patch(GLFWwindow *window)
 {
-	if (glfwGetTime() > 6.0)
+	if (glfwGetTime() > 2.0)
 	{
 		mac_moved = true;
 	}

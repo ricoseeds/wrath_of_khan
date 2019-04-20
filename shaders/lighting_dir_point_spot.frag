@@ -1,10 +1,4 @@
-//-----------------------------------------------------------------------------
-// NOTE:
-// This is not the most effient shader code but it gets the point across
-// and should be easy to follow.  The same diffuse and specular calculations 
-// are completed 3 separate times.  This can be optimized to be calculated
-// only once with attenuation and spotlight multipliers applied.
-//-----------------------------------------------------------------------------
+
 #version 330 core
 
 struct Material 
@@ -56,7 +50,7 @@ in vec2 TexCoord;
 in vec3 FragPos;
 in vec3 Normal;
 
-#define MAX_POINT_LIGHTS 30
+#define MAX_POINT_LIGHTS 3
 
 uniform DirectionalLight sunLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
